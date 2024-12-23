@@ -6,18 +6,18 @@
     </div>
     <div>
       <el-form ref="form" :model="tracedata" label-width="80px" size="mini" style="">
-        <el-form-item v-show="userType!='种植户'&userType!='消费者'" label="溯源码:" style="width: 300px" label-width="120px">
+        <el-form-item v-show="userType!='管理员'&userType!='用户'" label="溯源码:" style="width: 300px" label-width="120px">
           <el-input v-model="tracedata.traceability_code" />
         </el-form-item>
 
-        <div v-show="userType=='种植户'">
-          <el-form-item label="农产品名称:" style="width: 300px" label-width="120px">
+        <div v-show="userType=='管理员'">
+          <el-form-item label="物联网节点名称:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_fruitName" />
           </el-form-item>
-          <el-form-item label="产地:" style="width: 300px" label-width="120px">
+          <el-form-item label="传感器类型:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_origin" />
           </el-form-item>
-          <el-form-item label="种植时间:" style="width: 300px" label-width="120px">
+          <el-form-item label="所有者:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_plantTime" />
           </el-form-item>
           <el-form-item label="采摘时间:" style="width: 300px" label-width="120px">
@@ -27,7 +27,7 @@
             <el-input v-model="tracedata.Farmer_input.Fa_farmerName" />
           </el-form-item>
         </div>
-        <div v-show="userType=='工厂'">
+        <!-- <div v-show="userType=='工厂'">
           <el-form-item label="商品名称:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Factory_input.Fac_productName" />
           </el-form-item>
@@ -77,13 +77,13 @@
           <el-form-item label="商店电话:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Shop_input.Sh_shopPhone" />
           </el-form-item>
-        </div>
+        </div> -->
       </el-form>
       <span slot="footer" style="color: gray;" class="dialog-footer">
-        <el-button v-show="userType != '消费者'" type="primary" plain style="margin-left: 220px;" @click="submittracedata()">提 交</el-button>
+        <el-button v-show="userType != '用户'" type="primary" plain style="margin-left: 220px;" @click="submittracedata()">提 交</el-button>
       </span>
-      <span v-show="userType == '消费者'" slot="footer" style="color: gray;" class="dialog-footer">
-        消费者没有权限录入！请使用溯源功能!
+      <span v-show="userType == '用户'" slot="footer" style="color: gray;" class="dialog-footer">
+        用户没有权限录入！请使用溯源功能!
       </span>
     </div>
   </div>
@@ -150,7 +150,7 @@ export default {
       formData.append('traceability_code', this.tracedata.traceability_code)
       // 根据不同的用户给arg1、arg2、arg3..赋值,
       switch (this.userType) {
-        case '种植户':
+        case '管理员':
           formData.append('arg1', this.tracedata.Farmer_input.Fa_fruitName)
           formData.append('arg2', this.tracedata.Farmer_input.Fa_origin)
           formData.append('arg3', this.tracedata.Farmer_input.Fa_plantTime)

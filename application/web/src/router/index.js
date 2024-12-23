@@ -65,8 +65,6 @@ export const constantRoutes = [
       meta: { title: '溯源查询', icon: 'el-icon-search' }
     }]
   },
- 
-
   // {
   //   path: '/example',
   //   component: Layout,
@@ -161,27 +159,27 @@ export const constantRoutes = [
   //   ]
   // },
 
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'http://111.231.145.234:8080',
-        meta: { title: '区块链浏览器', icon: 'el-icon-discover' }
-      }
-    ]
-  },
-  {
-    path: '/',
-    component: Layout,
-    redirect: '/build',
-    children: [{
-      path: 'build',
-      name: 'Build',
-      component: () => import('@/views/build/index'),
-      meta: { title: '构建任意溯源系统', icon: 'el-icon-s-tools' }
-    }]
-  },
+  // {
+  //   path: 'external-link',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'http://111.231.145.234:8080',
+  //       meta: { title: '区块链浏览器', icon: 'el-icon-discover' }
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: '/',
+  //   component: Layout,
+  //   redirect: '/build',
+  //   children: [{
+  //     path: 'build',
+  //     name: 'Build',
+  //     component: () => import('@/views/build/index'),
+  //     meta: { title: '构建任意溯源系统', icon: 'el-icon-s-tools' }
+  //   }]
+  // },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
