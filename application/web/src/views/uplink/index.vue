@@ -86,13 +86,56 @@
         用户没有权限录入！请使用溯源功能!
       </span>
     </div>
+
+    <!-- 添加MQTT连接表单 -->
+    <el-form ref="mqttForm" :model="mqttConfig" label-width="120px" size="mini" style="margin-bottom: 20px">
+      <el-form-item label="MQTT服务器:" style="width: 300px">
+        <el-input v-model="mqttConfig.broker" placeholder="ws://111.231.145.234:8084" />
+      </el-form-item>
+      <el-form-item label="主题:" style="width: 300px">
+        <el-input v-model="mqttConfig.topic" placeholder="sensor/data" />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" :loading="mqttLoading" @click="connectMqtt">
+          {{ mqttConnected ? '断开连接' : '连接' }}
+        </el-button>
+      </el-form-item>
+    </el-form>
+
+    <!-- 添加消息显示区域 -->
+    <div v-if="mqttConnected" style="margin-top: 20px">
+      <h3>接收到的消息</h3>
+      <el-card v-if="mqttMessages.length > 0" style="margin-top: 10px">
+        <div v-for="(msg, index) in mqttMessages" :key="index" style="margin-bottom: 10px">
+          <div style="display: flex; justify-content: space-between">
+            <span style="color: #409EFF">主题: {{ msg.topic }}</span>
+            <span style="color: #909399">{{ msg.timestamp }}</span>
+          </div>
+          <div style="margin-top: 5px; word-break: break-all">
+            消息内容: {{ msg.message }}
+          </div>
+          <el-divider v-if="index !== mqttMessages.length - 1"></el-divider>
+        </div>
+      </el-card>
+      <el-empty v-else description="暂无消息"></el-empty>
+      <!-- 添加清空按钮 -->
+      <el-button
+        v-if="mqttMessages.length > 0"
+        type="danger"
+        size="small"
+        style="margin-top: 10px"
+        @click="clearMessages"
+      >
+        清空消息
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { uplink } from '@/api/trace'
-
+import mqtt from '@/utils/mqtt.js'
 export default {
   name: 'Uplink',
   data() {
@@ -128,7 +171,16 @@ export default {
           Sh_shopPhone: ''
         }
       },
-      loading: false
+      loading: false,
+      mqttConfig: {
+        broker: 'ws://111.231.145.234:8083/mqtt',
+        topic: 'WB/blockchain'
+      },
+      mqttClient: null,
+      mqttConnected: false,
+      mqttLoading: false,
+      mqttMessages: [],
+      maxMessages: 50
     }
   },
   computed: {
@@ -136,6 +188,12 @@ export default {
       'name',
       'userType'
     ])
+  },
+  beforeDestroy() {
+    if (this.mqttClient) {
+      this.mqttClient.end()
+    }
+    this.mqttMessages = []
   },
   methods: {
     submittracedata() {
@@ -197,6 +255,123 @@ export default {
         loading.close()
         console.log(err)
       })
+    },
+    async connectMqtt() {
+      if (this.mqttConnected) {
+        try {
+          await this.mqttClient.end()
+          this.mqttClient = null
+          this.mqttConnected = false
+          this.mqttLoading = false
+          this.$message.success('已断开连接')
+        } catch (error) {
+          console.error('Disconnect error:', error)
+          this.$message.error('断开连接失败')
+        }
+        return
+      }
+
+      if (!this.mqttConfig.broker || !this.mqttConfig.topic) {
+        this.$message.error('请填写MQTT服务器地址和主题')
+        return
+      }
+
+      if (!this.mqttConfig.broker.startsWith('ws://') && !this.mqttConfig.broker.startsWith('wss://')) {
+        this.$message.error('MQTT服务器地址必须以 ws:// 或 wss:// 开头')
+        return
+      }
+
+      this.mqttLoading = true
+      try {
+        console.log('正在连接到:', this.mqttConfig.broker)
+        const options = {
+          keepalive: 60,
+          clientId: 'mqttjs_' + Math.random().toString(16).substr(2, 8),
+          protocolVersion: 4,
+          clean: true,
+          reconnectPeriod: 1000,
+          connectTimeout: 30 * 1000,
+          rejectUnauthorized: false
+        }
+
+        this.mqttClient = mqtt.connect(this.mqttConfig.broker, options)
+
+        this.mqttClient.on('connecting', () => {
+          console.log('正在连接到MQTT服务器...')
+        })
+
+        this.mqttClient.on('connect', () => {
+          console.log('MQTT连接成功')
+          this.mqttConnected = true
+          this.mqttLoading = false
+          this.$message.success('MQTT 连接成功')
+          this.mqttClient.subscribe(this.mqttConfig.topic, (err) => {
+            if (err) {
+              console.error('主题订阅失败:', err)
+              this.$message.error(`主题订阅失败: ${err.message}`)
+              return
+            }
+            console.log('成功订阅主题:', this.mqttConfig.topic)
+            this.$message.success('主题订阅成功')
+          })
+        })
+
+        this.mqttClient.on('message', (topic, message) => {
+          try {
+            const messageStr = message.toString()
+            console.log('收到消息:', topic, messageStr)
+            // 添加新消息到数组开头
+            this.mqttMessages.unshift({
+              topic,
+              message: messageStr,
+              timestamp: new Date().toLocaleString()
+            })
+            // 限制消息数量
+            if (this.mqttMessages.length > this.maxMessages) {
+              this.mqttMessages = this.mqttMessages.slice(0, this.maxMessages)
+            }
+          } catch (error) {
+            console.error('处理消息时出错:', error)
+          }
+        })
+
+        this.mqttClient.on('error', (error) => {
+          console.error('MQTT错误:', error)
+          this.$message.error(`MQTT连接错误: ${error.message}`)
+          this.mqttLoading = false
+          this.mqttConnected = false
+        })
+
+        this.mqttClient.on('close', () => {
+          console.log('MQTT连接关闭')
+          this.mqttConnected = false
+          this.mqttLoading = false
+        })
+
+        this.mqttClient.on('offline', () => {
+          console.log('MQTT客户端离线')
+          this.mqttConnected = false
+        })
+      } catch (error) {
+        console.error('连接错误:', error)
+        this.$message.error(`连接失败: ${error.message}`)
+        this.mqttLoading = false
+      }
+    },
+    clearMessages() {
+      this.$confirm('确定要清空所有消息吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.mqttMessages = []
+        this.$message({
+          type: 'success',
+          message: '消息已清空'
+        })
+      }).catch(() => {
+        // 取消清空操作
+      })
     }
   }
 }
@@ -211,6 +386,18 @@ export default {
   &-text {
     font-size: 30px;
     line-height: 46px;
+  }
+}
+
+.el-card {
+  margin-top: 20px;
+}
+
+.message-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #EBEEF5;
+  &:last-child {
+    border-bottom: none;
   }
 }
 </style>
