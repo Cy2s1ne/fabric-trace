@@ -159,16 +159,16 @@ export const constantRoutes = [
   //   ]
   // },
 
-  // {
-  //   path: 'external-link',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'http://111.231.145.234:8080',
-  //       meta: { title: '区块链浏览器', icon: 'el-icon-discover' }
-  //     }
-  //   ]
-  // },
+  {
+    path: 'external-link',
+    component: Layout,
+    children: [
+      {
+        path: 'http://111.231.145.234:8080',
+        meta: { title: '区块链浏览器', icon: 'el-icon-discover' }
+      }
+    ]
+  },
   // {
   //   path: '/',
   //   component: Layout,

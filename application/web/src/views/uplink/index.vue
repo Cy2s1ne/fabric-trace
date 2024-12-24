@@ -14,16 +14,16 @@
           <el-form-item label="物联网节点名称:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_fruitName" />
           </el-form-item>
-          <el-form-item label="传感器类型:" style="width: 300px" label-width="120px">
+          <el-form-item label="设备ID:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_origin" />
           </el-form-item>
-          <el-form-item label="所有者:" style="width: 300px" label-width="120px">
+          <el-form-item label="传感器类型:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_plantTime" />
           </el-form-item>
-          <el-form-item label="采摘时间:" style="width: 300px" label-width="120px">
+          <el-form-item label="所有者ID:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_pickingTime" />
           </el-form-item>
-          <el-form-item label="种植户名称:" style="width: 300px" label-width="120px">
+          <el-form-item label="所有者名称:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_farmerName" />
           </el-form-item>
         </div>

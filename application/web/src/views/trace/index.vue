@@ -14,16 +14,16 @@
             <el-form-item label="物联网节点名称：">
               <span>{{ props.row.farmer_input.fa_fruitName }}</span>
             </el-form-item>
-            <el-form-item label="传感器类型：">
+            <el-form-item label="设备ID：">
               <span>{{ props.row.farmer_input.fa_origin }}</span>
             </el-form-item>
-            <el-form-item label="种植时间：">
+            <el-form-item label="传感器类型：">
               <span>{{ props.row.farmer_input.fa_plantTime }}</span>
             </el-form-item>
-            <el-form-item label="所有者：">
+            <el-form-item label="所有者ID：">
               <span>{{ props.row.farmer_input.fa_pickingTime }}</span>
             </el-form-item>
-            <el-form-item label="种植户名称：">
+            <el-form-item label="所有者名称：">
               <span>{{ props.row.farmer_input.fa_farmerName }}</span>
             </el-form-item>
             <el-form-item label="区块链交易ID：">
@@ -110,8 +110,8 @@
         prop="farmer_input.fa_fruitName"
       />
       <el-table-column
-        label="数据录入时间"
-        prop="farmer_input.fa_pickingTime"
+        label="所有者名称"
+        prop="farmer_input.fa_farmerName"
       />
     </el-table>
   </div>
