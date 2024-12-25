@@ -17,13 +17,13 @@
           <el-form-item label="设备ID:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_origin" />
           </el-form-item>
-          <el-form-item label="传感器类型:" style="width: 300px" label-width="120px">
+          <el-form-item label="所有者ID:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_plantTime" />
           </el-form-item>
-          <el-form-item label="所有者ID:" style="width: 300px" label-width="120px">
+          <el-form-item label="传感器类型:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_pickingTime" />
           </el-form-item>
-          <el-form-item label="所有者名称:" style="width: 300px" label-width="120px">
+          <el-form-item label="消息内容:" style="width: 300px" label-width="120px">
             <el-input v-model="tracedata.Farmer_input.Fa_farmerName" />
           </el-form-item>
         </div>
@@ -197,6 +197,10 @@ export default {
   },
   methods: {
     submittracedata() {
+      if (this.loading) {
+        return // 防止重复提交
+      }
+
       console.log(this.tracedata)
       const loading = this.$loading({
         lock: true,
@@ -204,9 +208,12 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
+      this.loading = true
+
       var formData = new FormData()
       formData.append('traceability_code', this.tracedata.traceability_code)
-      // 根据不同的用户给arg1、arg2、arg3..赋值,
+
+      // 根据不同的用户给arg1、arg2、arg3..赋值
       switch (this.userType) {
         case '管理员':
           formData.append('arg1', this.tracedata.Farmer_input.Fa_fruitName)
@@ -237,7 +244,9 @@ export default {
           formData.append('arg5', this.tracedata.Shop_input.Sh_shopPhone)
           break
       }
+
       uplink(formData).then(res => {
+        this.loading = false
         if (res.code === 200) {
           loading.close()
           this.$message({
@@ -252,8 +261,10 @@ export default {
           })
         }
       }).catch(err => {
+        this.loading = false
         loading.close()
         console.log(err)
+        this.$message.error('上链过程中发生错误')
       })
     },
     async connectMqtt() {
@@ -320,7 +331,7 @@ export default {
           try {
             const messageStr = message.toString()
             console.log('收到消息:', topic, messageStr)
-            // 添加新消息到数组开头
+            // 添加新消息到消息列表
             this.mqttMessages.unshift({
               topic,
               message: messageStr,
@@ -329,6 +340,30 @@ export default {
             // 限制消息数量
             if (this.mqttMessages.length > this.maxMessages) {
               this.mqttMessages = this.mqttMessages.slice(0, this.maxMessages)
+            }
+
+            // 尝试解析消息为JSON并填充表单
+            try {
+              const data = JSON.parse(messageStr)
+              if (this.userType === '管理员') {
+                // 填充管理员表单
+                this.tracedata.Farmer_input = {
+                  Fa_fruitName: data.nodeName || '',
+                  Fa_origin: data.deviceId || '',
+                  Fa_plantTime: data.ownerId || '',
+                  Fa_pickingTime: data.sensorType || '',
+                  Fa_farmerName: data.message || ''
+                }
+                // 自动生成溯源码（可以根据需要修改生成逻辑
+                this.tracedata.traceability_code = 'TC_' + new Date().getTime()
+                // 自动提交表单
+                this.$nextTick(() => {
+                  this.submittracedata()
+                })
+              }
+            } catch (parseError) {
+              console.error('JSON解析错误:', parseError)
+              this.$message.warning('消息格式不正确，无法自动填充表单')
             }
           } catch (error) {
             console.error('处理消息时出错:', error)
