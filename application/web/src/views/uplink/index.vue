@@ -88,7 +88,7 @@
     </div>
 
     <!-- 添加MQTT连接表单 -->
-    <el-form ref="mqttForm" :model="mqttConfig" label-width="120px" size="mini" style="margin-bottom: 20px">
+    <el-form v-show="userType !== '用户'" ref="mqttForm" :model="mqttConfig" label-width="120px" size="mini" style="margin-bottom: 20px">
       <el-form-item label="MQTT服务器:" style="width: 300px">
         <el-input v-model="mqttConfig.broker" placeholder="ws://175.24228.169:8084" />
       </el-form-item>
@@ -103,7 +103,7 @@
     </el-form>
 
     <!-- 添加消息显示区域 -->
-    <div v-if="mqttConnected" style="margin-top: 20px">
+    <div v-if="mqttConnected && userType !== '用户'" style="margin-top: 20px">
       <h3>接收到的消息</h3>
       <el-card v-if="mqttMessages.length > 0" style="margin-top: 10px">
         <div v-for="(msg, index) in mqttMessages" :key="index" style="margin-bottom: 10px">

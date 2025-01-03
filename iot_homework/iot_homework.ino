@@ -9,7 +9,7 @@
 char msg[50];
 const char* ssid = "iot421";
 const char* password = "hzcuiot421";
-const char* serverUrl = "http://10.66.4.119:8080/api/machines/check/";
+const char* serverUrl = "http://175.24.228.169:8080/api/machines/check/";
 const char* mqtt_server = "175.24.228.169";//   MQTT Broker地址
 const float TEMP_MIN = -20.0;   // 最低温度
 const float TEMP_MAX = 50.0;    // 最高温度
@@ -159,7 +159,7 @@ void sendGetRequest(String parameter1) {
   
   doc.clear();
   doc["nodeName"] = "DHT11_Node";  // 可以根据需要修改节点名称
-  doc["deviceId"] = client-001;
+  doc["deviceId"] = "client-001";
   doc["ownerId"] = "owner001";     // 可以根据需要修改所有者ID
   doc["sensorType"] = "DHT11";
 
