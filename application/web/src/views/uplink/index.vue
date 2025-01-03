@@ -90,7 +90,7 @@
     <!-- 添加MQTT连接表单 -->
     <el-form ref="mqttForm" :model="mqttConfig" label-width="120px" size="mini" style="margin-bottom: 20px">
       <el-form-item label="MQTT服务器:" style="width: 300px">
-        <el-input v-model="mqttConfig.broker" placeholder="ws://111.231.145.234:8084" />
+        <el-input v-model="mqttConfig.broker" placeholder="ws://175.24228.169:8084" />
       </el-form-item>
       <el-form-item label="主题:" style="width: 300px">
         <el-input v-model="mqttConfig.topic" placeholder="sensor/data" />
@@ -173,8 +173,8 @@ export default {
       },
       loading: false,
       mqttConfig: {
-        broker: 'ws://111.231.145.234:8083/mqtt',
-        topic: 'WB/blockchain'
+        broker: 'ws://175.24.228.169:8083/mqtt',
+        topic: 'blockchain/error'
       },
       mqttClient: null,
       mqttConnected: false,
