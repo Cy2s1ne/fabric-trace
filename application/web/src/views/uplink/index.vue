@@ -346,15 +346,35 @@ export default {
             try {
               const data = JSON.parse(messageStr)
               if (this.userType === '管理员') {
+                // 检查data.message是否也是JSON字符串或对象
+                const messageContent = data.message || ''
+                let parsedMessageContent = null
+                // 如果message已经是对象，直接使用
+                if (typeof messageContent === 'object' && messageContent !== null) {
+                  parsedMessageContent = messageContent
+                  console.log('message字段已经是JSON对象:', parsedMessageContent)
+                } else if (typeof messageContent === 'string' && messageContent.trim().startsWith('{')) {
+                  try {
+                    parsedMessageContent = JSON.parse(messageContent)
+                    console.log('成功解析message中的JSON数据:', parsedMessageContent)
+                  } catch (innerParseError) {
+                    console.log('message字段不是有效的JSON格式:', innerParseError)
+                  }
+                }
                 // 填充管理员表单
                 this.tracedata.Farmer_input = {
-                  Fa_fruitName: data.nodeName || '',
-                  Fa_origin: data.deviceId || '',
-                  Fa_plantTime: data.ownerId || '',
-                  Fa_pickingTime: data.sensorType || '',
-                  Fa_farmerName: data.message || ''
+                  // 如果parsedMessageContent存在并且有对应字段，则使用它，否则使用外层data中的字段
+                  Fa_fruitName: parsedMessageContent?.nodeName || data.nodeName || '',
+                  Fa_origin: parsedMessageContent?.deviceId || data.deviceId || '',
+                  Fa_plantTime: parsedMessageContent?.ownerId || data.ownerId || '',
+                  Fa_pickingTime: parsedMessageContent?.sensorType || data.sensorType || '',
+                  // 如果message是JSON对象，则将其转为格式化的JSON字符串显示
+                  Fa_farmerName: parsedMessageContent
+                    ? JSON.stringify(parsedMessageContent, null, 2)
+                    : (typeof messageContent === 'object'
+                      ? JSON.stringify(messageContent, null, 2)
+                      : messageContent)
                 }
-                // 自动生成溯源码（可以根据需要修改生成逻辑
                 this.tracedata.traceability_code = 'TC_' + new Date().getTime()
                 // 自动提交表单
                 this.$nextTick(() => {
